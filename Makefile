@@ -17,6 +17,10 @@ $(MAIN_CLASS): $(SOURCE)
 # Target to run the program with a grid file
 run: $(MAIN_CLASS)
 	$(JAVA) $(MAIN_CLASS) grid_0.txt
+#	$(JAVA) $(MAIN_CLASS) grid_1.txt
+#	$(JAVA) $(MAIN_CLASS) grid_2.txt
+#	$(JAVA) $(MAIN_CLASS) grid_3.txt
+#	$(JAVA) $(MAIN_CLASS) grid_4.txt
 
 # Target to clean compiled class files and output
 clean:
