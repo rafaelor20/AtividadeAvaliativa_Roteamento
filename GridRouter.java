@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.*;
 import java.util.List;
+import java.util.Queue;
 import java.awt.*;
 import java.awt.image.*;
 import javax.imageio.ImageIO;
@@ -24,6 +25,20 @@ public class GridRouter {
             this.y = y;
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (!(o instanceof Point))
+                return false;
+            Point p = (Point) o;
+            return x == p.x && y == p.y;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(x, y);
+        }
     }
 
     // Reconstruct the path from end to start using the parent map
@@ -39,6 +54,13 @@ public class GridRouter {
 
         // The path was reconstructed backwards, so we reverse it
         Collections.reverse(path);
+
+        // print on the console the path
+        System.out.println("Path found:");
+        for (Point p : path) {
+            System.out.print("(" + p.x + "," + p.y + ") ");
+        }
+        System.out.println();
         return path;
     }
 
@@ -48,12 +70,10 @@ public class GridRouter {
         boolean[][] visited = new boolean[N][N];
         queue.add(start);
         visited[start.x][start.y] = true;
-
         while (!queue.isEmpty()) {
             Point cur = queue.poll();
-
             // If we reached the destination, reconstruct the path
-            if (cur.equals(end)) {
+            if (cur.x == end.x && cur.y == end.y) {
                 return reconstructPath(parent, end);
             }
 
@@ -73,16 +93,6 @@ public class GridRouter {
 
         // Return an empty list if no path is found
         return Collections.emptyList();
-    }
-
-    // Reconstruct the path from end to start
-    private static List<Point> reconstructPath(Point[][] parent, Point end) {
-        List<Point> path = new ArrayList<>();
-        for (Point at = end; at != null; at = parent[at.x][at.y]) {
-            path.add(at);
-        }
-        Collections.reverse(path);
-        return path;
     }
 
     // Check if the move is valid (within bounds, not a barrier, and not visited)
@@ -117,7 +127,7 @@ public class GridRouter {
     }
 
     // Main function to run the routing algorithm
-    public static void solveGrid(int[][] grid) throws IOException {
+    public static void solveGrid(int[][] grid, String baseName) throws IOException {
         int totalLength = 0;
         int connectedPairs = 0;
 
@@ -140,24 +150,26 @@ public class GridRouter {
         }
 
         // Output the result
-        outputResult(grid, connectedPairs, totalLength);
+        outputResult(grid, connectedPairs, totalLength, "resultado_" + baseName + ".txt");
 
         // Generate PNG image of the grid
-        generatePNG(grid, "solucao_X.png");
+        generatePNG(grid, "solucao_" + baseName + ".png");
     }
 
     // Output the result to resultado_X.txt
-    private static void outputResult(int[][] grid, int connectedPairs, int totalLength) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter("resultado_X.txt"));
-        writer.write(connectedPairs + "\n");
-        writer.write(totalLength + "\n");
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                writer.write(grid[i][j] + " ");
+    private static void outputResult(int[][] grid, int connectedPairs, int totalLength, String filename)
+            throws IOException {
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
+            writer.write(connectedPairs + "\n");
+            writer.write(totalLength + "\n");
+            for (int i = 0; i < N; i++) {
+                for (int j = 0; j < N; j++) {
+                    writer.write(String.valueOf(grid[i][j]));
+                }
+                writer.write("\n");
             }
-            writer.write("\n");
         }
-        writer.close();
     }
 
     // Generate PNG image of the grid solution
@@ -220,6 +232,8 @@ public class GridRouter {
         reader.close();
 
         // Solve the grid routing problem
-        solveGrid(grid);
+        // pega o número X do nome grid_X.txt
+        String baseName = args[0].replaceAll("[^0-9]", "");
+        solveGrid(grid, baseName);
     }
 }
