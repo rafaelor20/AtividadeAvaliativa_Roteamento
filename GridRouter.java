@@ -55,12 +55,6 @@ public class GridRouter {
         // The path was reconstructed backwards, so we reverse it
         Collections.reverse(path);
 
-        // print on the console the path
-        System.out.println("Path found:");
-        for (Point p : path) {
-            System.out.print("(" + p.x + "," + p.y + ") ");
-        }
-        System.out.println();
         return path;
     }
 
