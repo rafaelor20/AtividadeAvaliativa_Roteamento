@@ -81,6 +81,12 @@ public class GridRouter {
                     queue.add(next);
                     visited[newX][newY] = true;
                     parent.put(next, cur);
+                } else if (newX == end.x && newY == end.y) {
+                    // Allow moving onto the end terminal even if it's not free
+                    Point next = new Point(newX, newY);
+                    queue.add(next);
+                    visited[newX][newY] = true;
+                    parent.put(next, cur);
                 }
             }
         }
@@ -92,7 +98,7 @@ public class GridRouter {
     // Check if the move is valid (within bounds, not a barrier, and not visited)
     private static boolean isValid(int x, int y, int[][] grid, boolean[][] visited) {
         // Check if it's within bounds, not a barrier (1), and not already visited
-        return x >= 0 && x < N && y >= 0 && y < N && grid[x][y] != 1 && !visited[x][y];
+        return x >= 0 && x < N && y >= 0 && y < N && grid[x][y] == 0 && !visited[x][y];
     }
 
     private static int markPath(int[][] grid, List<Point> path, int color) {
