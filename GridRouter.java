@@ -16,6 +16,17 @@ public class GridRouter {
             { 0, -1 }, // Left
             { -1, 0 } // Up
     };
+    private static final int[] TERMINAL_COLORS = { 2, 3, 4 }; // Red, Green, Blue
+
+    private final int[][] grid;
+    private final String baseName;
+    private int totalLength;
+    private int connectedPairs;
+
+    public GridRouter(int[][] grid, String baseName) {
+        this.grid = grid;
+        this.baseName = baseName;
+    }
 
     static class Point {
         int x, y;
@@ -42,7 +53,7 @@ public class GridRouter {
     }
 
     // Reconstruct the path from end to start using the parent map
-    private static List<Point> reconstructPath(Map<Point, Point> parent, Point end) {
+    private List<Point> reconstructPath(Map<Point, Point> parent, Point end) {
         List<Point> path = new ArrayList<>();
         Point current = end;
 
@@ -58,7 +69,7 @@ public class GridRouter {
         return path;
     }
 
-    private static List<Point> bfs(int[][] grid, Point start, Point end) {
+    private List<Point> bfs(Point start, Point end) {
         Queue<Point> queue = new LinkedList<>();
         Map<Point, Point> parent = new HashMap<>();
         boolean[][] visited = new boolean[N][N];
@@ -96,12 +107,12 @@ public class GridRouter {
     }
 
     // Check if the move is valid (within bounds, not a barrier, and not visited)
-    private static boolean isValid(int x, int y, int[][] grid, boolean[][] visited) {
+    private boolean isValid(int x, int y, int[][] grid, boolean[][] visited) {
         // Check if it's within bounds, not a barrier (1), and not already visited
         return x >= 0 && x < N && y >= 0 && y < N && grid[x][y] == 0 && !visited[x][y];
     }
 
-    private static int markPath(int[][] grid, List<Point> path, int color) {
+    private int markPath(List<Point> path, int color) {
         int length = 0;
         for (Point p : path) {
             // If the cell is not already part of a path, mark it
@@ -114,7 +125,7 @@ public class GridRouter {
     }
 
     // Find terminals by color
-    private static List<Point> findTerminals(int[][] grid, int color) {
+    private List<Point> findTerminals(int color) {
         List<Point> terminals = new ArrayList<>();
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
@@ -127,21 +138,18 @@ public class GridRouter {
     }
 
     // Main function to run the routing algorithm
-    public static void solveGrid(int[][] grid, String baseName) throws IOException {
-        int totalLength = 0;
-        int connectedPairs = 0;
+    public void solveGrid() throws IOException {
+        this.totalLength = 0;
+        this.connectedPairs = 0;
 
-        // Terminal colors: 2 (red), 3 (green), 4 (blue)
-        int[] colors = { 2, 3, 4 };
-
-        for (int color : colors) {
-            List<Point> terminals = findTerminals(grid, color);
+        for (int color : TERMINAL_COLORS) {
+            List<Point> terminals = findTerminals(color);
             if (terminals.size() == 2) {
                 Point start = terminals.get(0);
                 Point end = terminals.get(1);
-                List<Point> path = bfs(grid, start, end);
+                List<Point> path = bfs(start, end);
                 if (!path.isEmpty()) {
-                    totalLength += markPath(grid, path, color); // Mark the path in the grid
+                    totalLength += markPath(path, color); // Mark the path in the grid
                     connectedPairs++;
                 } else {
                     System.out.println("No path found for color: " + color);
@@ -150,15 +158,14 @@ public class GridRouter {
         }
 
         // Output the result
-        outputResult(grid, connectedPairs, totalLength, "resultado_" + baseName + ".txt");
+        outputResult("resultado_" + this.baseName + ".txt");
 
         // Generate PNG image of the grid
-        generatePNG(grid, "solucao_" + baseName + ".png");
+        generatePNG("solucao_" + this.baseName + ".png");
     }
 
-    // Output the result to resultado_X.txt
-    private static void outputResult(int[][] grid, int connectedPairs, int totalLength, String filename)
-            throws IOException {
+    // Output the result to a text file
+    private void outputResult(String filename) throws IOException {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
             writer.write(connectedPairs + "\n");
@@ -173,7 +180,7 @@ public class GridRouter {
     }
 
     // Generate PNG image of the grid solution
-    private static void generatePNG(int[][] grid, String filename) throws IOException {
+    private void generatePNG(String filename) throws IOException {
         int cellSize = 20; // Size of each grid cell in pixels
         int imgSize = N * cellSize; // Total image size
 
@@ -234,6 +241,7 @@ public class GridRouter {
         // Solve the grid routing problem
         // pega o número X do nome grid_X.txt
         String baseName = args[0].replaceAll("[^0-9]", "");
-        solveGrid(grid, baseName);
+        GridRouter router = new GridRouter(grid, baseName);
+        router.solveGrid();
     }
 }
